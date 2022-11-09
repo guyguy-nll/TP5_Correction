@@ -7,10 +7,10 @@ const router = express.Router();
 
 // Create RAW data array
 let movies = [];
-const url = `http://www.omdbapi.com/?i=tt3896198&apikey=94da689c&t=${movie}`;
 
 // On insère un film initial
 const movie = "inception";
+const url = `http://www.omdbapi.com/?i=tt3896198&apikey=94da689c&t=${movie}`;
 
 // Make a request for a movie
 axios.get(url)
