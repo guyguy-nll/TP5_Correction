@@ -14,24 +14,42 @@ const url = `http://www.omdbapi.com/?i=tt3896198&apikey=94da689c&t=${movie}`;
 
 // Make a request for a movie
 axios.get(url)
-.then(function (response) {
-  // handle success
-  if(response.data){
-    const {Title, Year, Runtime, Actors, Poster, BoxOffice, Ratings} = response.data;
-    
-    movies.push({
-      id: _.uniqueId(),
-      movie: Title,
-      yearOfRelease: Year,
-      duration: Runtime, // en minutes,
-      actors: Actors,
-      poster: Poster, // lien vers une image d'affiche,
-      boxOffice: BoxOffice, // en USD$,
-      rottenTomatoesScore: Ratings && Ratings[1].Value
-    });
-  }
-  console.log(movies);
-});
+  .then(function (response) {
+    // handle success
+    if (response.data) {
+      const { Title, Poster } = response.data;
+
+      movies.push({
+        id: _.uniqueId(),
+        movie: Title,
+        poster: Poster, // lien vers une image d'affiche,
+      });
+    }
+    console.log(movies);
+  });
+
+
+  app.get('/api/stuff/:id', (req, res, next) => {
+    Thing.findOne({ _id: req.params.id })
+      .then(thing => res.status(200).json(thing))
+      .catch(error => res.status(404).json({ error }));
+  });
+
+
+  app.get('/api/stuff/:id')
+  .then(function (response) {
+    // handle success
+    if (response.data) {
+      const { Title, Poster } = response.data;
+
+      movies.push({
+        id: _.uniqueId(),
+        movie: Title,
+        poster: Poster, // lien vers une image d'affiche,
+      });
+    }
+    console.log(movies);
+  });
 
 // .../movies/
 /* GET movies listing. */
@@ -47,11 +65,11 @@ router.get('/:id', (req, res) => {
   // Find movie in DB
   const movie = _.find(movies, ["id", id]);
 
-  if(movie) {
+  if (movie) {
     // Return movie
     res.status(200).json({
       message: 'movie found!',
-      movie 
+      movie
     });
   } else {
     res.status(404).json({
@@ -65,52 +83,48 @@ router.get('/:id', (req, res) => {
 router.put('/', (req, res) => {
   // Get the data from request from request
   const { movie } = req.body;
-  
+
   const url = `http://www.omdbapi.com/?i=tt3896198&apikey=94da689c&t=${movie}`;
-  
+
   // Make a request for a movie
   axios.get(url)
-  .then((data) => {
-    // handle success
-    if(data.data){
-      const {Title, Year, Runtime, Actors, Poster, BoxOffice, Ratings} = data.data;
-      const newMovie = {
-        id: _.uniqueId(),
-        movie: Title,
-        yearOfRelease: Year,
-        duration: Runtime, // en minutes,
-        actors: Actors,
-        poster: Poster, // lien vers une image d'affiche,
-        boxOffice: BoxOffice, // en USD$,
-        rottenTomatoesScore: Ratings && Ratings[1].Value
+    .then((data) => {
+      // handle success
+      if (data.data) {
+        const { Title, Poster } = data.data;
+        const newMovie = {
+          id: _.uniqueId(),
+          movie: Title,
+          poster: Poster, // lien vers une image d'affiche,
+        }
+
+        movies.push(newMovie);
+
+        // Return validation message
+        res.json({
+          message: `Just added ${Title}`,
+          movie: { newMovie },
+        });
+      } else {
+        res.json({
+          message: `Movie not found`
+        });
       }
-      
-      movies.push(newMovie);
-      
-      // Return validation message
-      res.json({
-        message: `Just added ${Title}`,
-        movie: { newMovie },
-      });
-    } else {
-    res.json({
-      message: `Movie not found`
-    });}
-  })
-  .catch(function (error) {
-    // handle error
-    res.json({error});
-  }); 
+    })
+    .catch(function (error) {
+      // handle error
+      res.json({ error });
+    });
 });
 
 /* DELETE movie. */
 router.delete('/:id', (req, res) => {
   // Get the :id of the movie we want to delete from the params of the request
   const { id } = req.params;
-  
+
   // Remove from "DB"
   _.remove(movies, ["id", id]);
-  
+
   // Return message
   res.json({
     message: `Just removed ${id}`
@@ -127,7 +141,7 @@ router.post('/:id', (req, res) => {
   const movieToUpdate = _.find(movies, ["id", id]);
   // Update data with new data (js is by address)
   movieToUpdate.movie = movie;
-  
+
   // Return message
   res.json({
     message: `Just updated ${id} with ${movie}`
